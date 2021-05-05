@@ -25,7 +25,7 @@ public class CoWinClient {
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
         Gson gson = new Gson();
-        String trivandrumDistrictCode = "296";
+        String trivandrumDistrictCode = "296"; //Externalise the district code as required
         Request request = new Request.Builder()
                 .url("https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=" + trivandrumDistrictCode + "&date=" + date)
                 .method("GET", null)
