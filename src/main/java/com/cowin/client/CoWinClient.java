@@ -10,13 +10,13 @@ import okhttp3.Response;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Map;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class CoWinClient {
 
     //Basic code to check if there are any slots available for a given date; modify/encapsulate as per your needs
-    
+
     public static void main(String[] args) throws IOException {
         String date = "06-05-2021";
         checkAvailabilityFor(date);
@@ -46,11 +46,14 @@ public class CoWinClient {
 
     private static void processCenter(Center center) {
         AvailabilityHandler handler = new PrinterHandler();
-        Map<String, Integer> availableSessions = center.getSessions()
+        List<Session> availableSessions = center.getSessions()
                 .stream()
                 .filter(CoWinClient::availableSlots)
-                .collect(Collectors.groupingBy(Session::getSession_id, Collectors.summingInt(Session::getAvailable_capacity)));
-        availableSessions.forEach((s, availability) -> handler.handleAvailability(center, availability));
+                .collect(Collectors.toList());
+        boolean availableSlots = !availableSessions.isEmpty();
+        if (availableSlots) {
+            handler.handleAvailability(center, availableSessions);
+        }
     }
 
     private static boolean availableSlots(Session session) {
@@ -59,13 +62,15 @@ public class CoWinClient {
 }
 
 interface AvailabilityHandler {
-    void handleAvailability(Center center, int availableCapacity);
+    void handleAvailability(Center center, List<Session> availableSessions);
 }
 
 class PrinterHandler implements AvailabilityHandler {
     @Override
-    public void handleAvailability(Center center, int availableCapacity) {
+    public void handleAvailability(Center center, List<Session> availableSessions) {
+        Integer slotsCount = availableSessions.stream()
+                .collect(Collectors.summingInt(value -> value.getAvailable_capacity()));
         System.out.println(Instant.now().toString() + " : "
-                + availableCapacity + " slot(s) available in " + center.getBlock_name() + ", " + center.getName());
+                + slotsCount + " slot(s) available in " + center.getBlock_name() + ", " + center.getName());
     }
 }
