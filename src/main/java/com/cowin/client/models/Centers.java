@@ -1,0 +1,15 @@
+package com.cowin.client.models;
+
+import java.util.List;
+
+public class Centers {
+    List<Center> centers;
+
+    public List<Center> getCenters() {
+        return centers;
+    }
+
+    public void setCenters(List<Center> centers) {
+        this.centers = centers;
+    }
+}
