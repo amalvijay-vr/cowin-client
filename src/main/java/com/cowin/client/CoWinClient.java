@@ -18,37 +18,22 @@ public class CoWinClient {
     //Basic code to check if there are any slots available for a given date; modify/encapsulate as per your needs
 
     public static final int MAX_DAYS = 4;
+    public static final String CO_VIN_IN_API_V_2_PUBLIC_CALENDAR = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict";
+    public static final String TRIVANDRUM_DISTRICT_CODE = "296"; //Externalise the district code as required
 
     public static void main(String[] args)  {
         getNextDays(MAX_DAYS)
-                .forEach(CoWinClient::checkAvailabilityFor);
-
+                .forEach(CoWinClient::checkAvailability);
         //To check a single date, use => checkAvailabilityFor("06-05-2021");
     }
 
-    private static List<String> getNextDays(int maxDays) {
-        List<String> days = new ArrayList<>();
-        String pattern = "dd-MM-yyyy";
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-        Date dt = new Date();
-        Calendar c = Calendar.getInstance();
-        c.setTime(dt);
-        days.add(simpleDateFormat.format(c.getTime()));
-        for (int i = 1; i < maxDays; i++) {
-            c.add(Calendar.DATE, 1);
-            days.add(simpleDateFormat.format(c.getTime()));
-        }
-        return days;
-    }
-
-    private static void checkAvailabilityFor(String date) {
+    private static void checkAvailability(String date) {
         System.out.println("Availability on " + date);
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
         Gson gson = new Gson();
-        String trivandrumDistrictCode = "296"; //Externalise the district code as required
         Request request = new Request.Builder()
-                .url("https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=" + trivandrumDistrictCode + "&date=" + date)
+                .url(CO_VIN_IN_API_V_2_PUBLIC_CALENDAR + "?district_id=" + TRIVANDRUM_DISTRICT_CODE + "&date=" + date)
                 .method("GET", null)
                 .addHeader("accept", "application/json")
                 .addHeader("Accept-Language", "hi_IN")
@@ -83,6 +68,21 @@ public class CoWinClient {
             }
 
         }
+    }
+
+    private static List<String> getNextDays(int maxDays) {
+        List<String> days = new ArrayList<>();
+        String pattern = "dd-MM-yyyy";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        Date dt = new Date();
+        Calendar c = Calendar.getInstance();
+        c.setTime(dt);
+        days.add(simpleDateFormat.format(c.getTime()));
+        for (int i = 1; i < maxDays; i++) {
+            c.add(Calendar.DATE, 1);
+            days.add(simpleDateFormat.format(c.getTime()));
+        }
+        return days;
     }
 
     private static void processCenter(Center center) {
