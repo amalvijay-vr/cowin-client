@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 
 public class CoWinClient {
 
+    //Basic code to check if there are any slots available for a given date; modify/encapsulate as per your needs
+    
     public static void main(String[] args) throws IOException {
         String date = "06-05-2021";
         checkAvailabilityFor(date);
