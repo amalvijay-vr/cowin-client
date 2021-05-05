@@ -11,18 +11,16 @@ import okhttp3.Response;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CoWinClient {
-
     //Basic code to check if there are any slots available for a given date; modify/encapsulate as per your needs
 
-    public static void main(String[] args) throws IOException {
-        getNextDays(4)
+    public static final int MAX_DAYS = 4;
+
+    public static void main(String[] args)  {
+        getNextDays(MAX_DAYS)
                 .forEach(CoWinClient::checkAvailabilityFor);
 
         //To check a single date, use => checkAvailabilityFor("06-05-2021");
@@ -61,14 +59,16 @@ public class CoWinClient {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        assert response != null;
         if (response.code() == 200) {
             if (response.body() != null) {
                 Centers centers = null;
                 try {
-                    centers = gson.fromJson(response.body().string(), Centers.class);
+                    centers = gson.fromJson(Objects.requireNonNull(response.body()).string(), Centers.class);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                assert centers != null;
                 centers.getCenters()
                         .forEach(CoWinClient::processCenter);
             }
@@ -76,7 +76,7 @@ public class CoWinClient {
             System.out.println("Service not Available");
             if (response.body() != null) {
                 try {
-                    System.out.println(response.body().string());
+                    System.out.println(Objects.requireNonNull(response.body()).string());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
