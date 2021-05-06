@@ -17,17 +17,25 @@ import java.util.stream.Collectors;
 public class CoWinClient {
     //Basic code to check if there are any slots available for a given date; modify/encapsulate as per your needs
 
-    public static final int MAX_DAYS = 4;
+    public static final int MAX_DAYS = 1;
     public static final String CO_VIN_IN_API_V_2_PUBLIC_CALENDAR = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict";
     public static final String TRIVANDRUM_DISTRICT_CODE = "296"; //Externalise the district code as required
 
-    public static void main(String[] args)  {
+    public static void main(String[] args) {
         getNextDays(MAX_DAYS)
-                .forEach(CoWinClient::checkAvailability);
+                .forEach(CoWinClient::checkAvailabilityProxy);
         //To check a single date, use => checkAvailabilityFor("06-05-2021");
     }
 
-    private static void checkAvailability(String date) {
+    private static void checkAvailabilityProxy(String date){
+        try {
+            checkAvailability(date);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void checkAvailability(String date) throws IOException {
         System.out.println("Availability on " + date);
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
@@ -37,34 +45,26 @@ public class CoWinClient {
                 .method("GET", null)
                 .addHeader("accept", "application/json")
                 .addHeader("Accept-Language", "hi_IN")
+                .addHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36") //User-Agent header was added as workaround when all the non-browser requests were getting rejected with a 403
                 .build();
         Response response = null;
-        try {
-            response = client.newCall(request).execute();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        response = client.newCall(request).execute();
+
         assert response != null;
         if (response.code() == 200) {
             if (response.body() != null) {
                 Centers centers = null;
-                try {
-                    centers = gson.fromJson(Objects.requireNonNull(response.body()).string(), Centers.class);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                centers = gson.fromJson(Objects.requireNonNull(response.body()).string(), Centers.class);
                 assert centers != null;
                 centers.getCenters()
                         .forEach(CoWinClient::processCenter);
             }
-        }else {
+        } else {
             System.out.println("Service not Available");
             if (response.body() != null) {
-                try {
-                    System.out.println(Objects.requireNonNull(response.body()).string());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                System.out.println(Objects.requireNonNull(response.body()).string());
+
             }
 
         }
@@ -77,8 +77,7 @@ public class CoWinClient {
         Date dt = new Date();
         Calendar c = Calendar.getInstance();
         c.setTime(dt);
-        days.add(simpleDateFormat.format(c.getTime()));
-        for (int i = 1; i < maxDays; i++) {
+        for (int i = 0; i < maxDays; i++) {
             c.add(Calendar.DATE, 1);
             days.add(simpleDateFormat.format(c.getTime()));
         }
