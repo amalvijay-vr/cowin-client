@@ -27,7 +27,7 @@ public class CoWinClient {
         //To check a single date, use => checkAvailabilityFor("06-05-2021");
     }
 
-    private static void checkAvailabilityProxy(String date){
+    private static void checkAvailabilityProxy(String date) {
         try {
             checkAvailability(date);
         } catch (IOException e) {
@@ -47,15 +47,10 @@ public class CoWinClient {
                 .addHeader("Accept-Language", "hi_IN")
                 .addHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36") //User-Agent header was added as workaround when all the non-browser requests were getting rejected with a 403
                 .build();
-        Response response = null;
-
-        response = client.newCall(request).execute();
-
-        assert response != null;
+        Response response = client.newCall(request).execute();
         if (response.code() == 200) {
             if (response.body() != null) {
-                Centers centers = null;
-                centers = gson.fromJson(Objects.requireNonNull(response.body()).string(), Centers.class);
+                Centers centers = gson.fromJson(Objects.requireNonNull(response.body()).string(), Centers.class);
                 assert centers != null;
                 centers.getCenters()
                         .forEach(CoWinClient::processCenter);
@@ -105,6 +100,7 @@ public class CoWinClient {
 
 interface AvailabilityHandler {
     void handleAvailability(Center center, List<Session> availableSessions);
+
     void handleUnAvailability(Center center);
 }
 
